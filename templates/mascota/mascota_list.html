@@ -1,0 +1,93 @@
+{% extends 'base/base.html' %}
+{% block title %} LISTA-MASCOTAS {% endblock %}
+{% block content %}
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <td>#</td>
+            <td>Nombre</td>
+{#            <td>Raza</td>#}
+            <td>Sexo</td>
+            <td>Edad</td>
+            <td>Fecha de Rescate</td>
+            <td>Vacunas</td>
+            <td>Adoptante</td>
+            <td>Acciones</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% if object_list %}
+        {% for mascota in object_list %}
+        <tr>
+            <td>{{ mascota.id }}</td>
+            <td>{{ mascota.nombre}}</td>
+{#            <td>#}
+{#                <a class="btn btn-info" href="{% url 'adopcion:persona_detailclase' mascota.raza.id %}" >{{ mascota.raza }}</a>#}
+{#                <a class="btn btn-info" href="#" >{{ mascota.raza.nombre }}</a>#}
+{#            </td>#}
+            <td>{{ mascota.sexo }}</td>
+            <td>{{ mascota.edad_aproximada }}</td>
+            <td>{{ mascota.fecha_rescate }}</td>
+            <td>
+            {% for vacuna in mascota.vacuna.values %}
+                {{ vacuna.nombre }}{% if not forloop.last %},{% endif %}
+            {% endfor %}
+            </td>
+            <td>{{ mascota.persona.nombre }} {{ mascota.persona.apellidos }}</td>
+            <td>
+{#                <a class="btn btn-info" href="{% url 'adopcion:persona_detailclase' mascota.persona.id %}" >Ver Adoptante</a>#}
+                <a class="btn btn-info" href="#" >Ver Adoptante</a>
+{#                <a class="btn btn-primary" href="{% url 'mascota:mascota_editarclase' mascota.id %}" >Editar</a>#}
+                <a class="btn btn-primary" href="#" >Editar</a>
+{#                <a class="btn btn-danger" href="{% url 'mascota:mascota_eliminarclase' mascota.id %}" >Eliminar</a>#}
+                <a class="btn btn-danger" href="#" >Eliminar</a>
+            </td>
+        </tr>
+        {% endfor %}
+
+        {% elif mascotas %}
+        {% for mascota in mascotas %}
+        <tr>
+            <td>{{ mascota.id }}</td>
+            <td>{{ mascota.nombre}}</td>
+{#            <td>#}
+{#                <a class="btn btn-info" href="{% url 'adopcion:persona_detailfuncion' mascota.raza.id %}" >{{ mascota.raza }}</a>#}
+{#                <a class="btn btn-info" href="#" >{{ mascota.raza.nombre }}</a>#}
+{#            </td>#}
+            <td>{{ mascota.sexo }}</td>
+            <td>{{ mascota.edad_aproximada }}</td>
+            <td>{{ mascota.fecha_rescate }}</td>
+            <td>
+            {% for vacuna in mascota.vacuna %}
+                {{ vacuna.nombre }},
+            {% endfor %}
+            </td>
+            <td>{{ mascota.persona.nombre }} {{ mascota.persona.apellidos }}</td>
+            <td>
+{#                <a class="btn btn-info" href="{% url 'adopcion:persona_detailfuncion' mascota.persona_id %}" >Ver Adoptante</a>#}
+                <a class="btn btn-info" href="{% url 'mascota-persona' api_v mascota.id %}" >Ver Adoptante</a>
+{#                <a class="btn btn-primary" href="{% url 'mascota:mascota_editarfuncion' mascota.id %}" >Editar</a>#}
+                <a class="btn btn-primary" href="{% url 'mascota-update' api_v mascota.id %}" >Editar</a>
+{#                <a class="btn btn-danger" href="{% url 'mascota:mascota_eliminarfuncion' mascota.id %}" >Eliminar</a>#}
+                <a class="btn btn-danger" href="{% url 'mascota-delete' api_v mascota.id %}" >Eliminar</a>
+            </td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <h1>No Hay Registros de Mascotas</h1>
+        {% endif %}
+    </tbody>
+</table>
+<ul class="pager">
+    <li>
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+    </li>
+    <li>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+    </li>
+</ul>
+{% endblock %}

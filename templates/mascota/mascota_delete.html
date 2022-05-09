@@ -1,0 +1,15 @@
+{% extends 'base/base.html' %}
+{% block title %} ELIMINAR-MASCOTA {% endblock %}
+{% block content %}
+<form action="" method="post">
+    {% csrf_token %}
+    <h3>¿Desea eliminar el registro de
+        {% if object %}
+            {{ object.nombre }}?
+        {% elif mascota %}
+            {{ mascota.nombre }}?
+        {% endif %}</h3>
+    <button class="btn btn-danger" type="submit">Sí, eliminar</button>
+    <a class="btn btn-default" href="javascript:history.back();">Cancelar</a>
+</form>
+{% endblock %}
