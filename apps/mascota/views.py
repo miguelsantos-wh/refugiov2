@@ -35,22 +35,12 @@ def mascota_create(request, api_v):
     form = MascotaForm(request.POST or None)
     if request.method == 'POST':
         if form.is_valid():
-            data = {}
-            for field in form.data:
-                if field != 'csrfmiddlewaretoken':
-                    if field == 'vacuna':
-                        list_vacuna = []
-                        for vacuna in form.data.getlist(field):
-                            list_vacuna.append(int(vacuna))
-                        data[field] = list_vacuna
-                    elif field == 'persona':
-                        data[field] = int(form.data.get(field))
-                    else:
-                        data[field] = form.data.get(field)
-            data = json.dumps(data)
-            headers = {'Content-Type': 'application/json', "X-CSRFToken": csrftoken}
+            data = form.cleaned_data
+            data['fecha_rescate'] = form.data['fecha_rescate']
+            data['persona'] = int(data['persona'])
+            data['vacuna'] = eval(data['vacuna']) if data['vacuna'] else []
             url_mascota = "{0}{1}/api/{2}/mascotas/".format(protocol, host, api_v)
-            response = requests.post(url=url_mascota, data=data, headers=headers, cookies=cookies)
+            response = requests.post(url=url_mascota, data=data, headers={"X-CSRFToken": csrftoken}, cookies=cookies)
             if response.ok:
                 return redirect('mascota-list', api_v=api_v)
     form = set_mascota_form(form, cookies, host, api_v)
@@ -96,7 +86,6 @@ def mascota_delete(request, api_v, pk):
     url = "{0}{1}/api/{2}/mascotas/{3}/".format(protocol, host, api_v, pk)
     if request.method == 'POST':
         headers = {'Content-Type': 'application/json', "X-CSRFToken": csrftoken}
-        # response = requests.request("DELETE", url, cookies={**request.COOKIES})
         response = requests.delete(url, cookies=cookies, headers=headers)
         return redirect('mascota-list', api_v=api_v)
     response = requests.request("GET", url, cookies=cookies)
@@ -116,21 +105,11 @@ def mascota_edit(request, api_v, pk):
         form = set_mascota_edit_form(form, cookies, host, response_mascota)
     else:
         if form.is_valid():
-            data = {'vacuna': []}
-            for field in form.data:
-                if field != 'csrfmiddlewaretoken':
-                    if field == 'vacuna':
-                        list_vacuna = []
-                        for vacuna in form.data.getlist(field):
-                            list_vacuna.append(int(vacuna))
-                        data[field] = list_vacuna
-                    elif field == 'persona':
-                        data[field] = int(form.data.get(field))
-                    else:
-                        data[field] = form.data.get(field)
-            data = json.dumps(data)
-            headers = {'Content-Type': 'application/json', "X-CSRFToken": csrftoken}
-            response = requests.put(url=url, data=data, headers=headers, cookies=cookies)
+            data = form.cleaned_data
+            data['fecha_rescate'] = form.data['fecha_rescate']
+            data['persona'] = int(data['persona'])
+            data['vacuna'] = eval(data['vacuna']) if data['vacuna'] else []
+            response = requests.put(url=url, data=data, headers={"X-CSRFToken": csrftoken}, cookies=cookies)
             if response.ok:
                 return redirect('mascota-list', api_v=api_v)
     form = set_mascota_form(form, cookies, host, api_v)
@@ -157,4 +136,9 @@ def mascota_persona(request, api_v, pk):
     response = requests.get(url=url, cookies=cookies)
     if response.ok:
         response = response.json()
-    return render(request, 'mascota/mascota_persona.html',  {'object': response[0]})
+        try:
+            response = response[0]
+        except:
+            pass
+    return render(request, 'mascota/mascota_persona.html',  {'object': response})
+

@@ -70,12 +70,12 @@ def mascota_detail_persona_ad(request, pk, format=None):
     Obtener persona de la mascota (APIView Decorate)
     """
     try:
-        persona = Persona.objects.filter(mascota=pk)
+        persona = Persona.objects.filter(mascota=pk).first()
     except Persona.DoesNotExist:
         raise Http404
 
     if request.method == 'GET':
-        persona_sr = PersonaSerializer(persona, many=True)
+        persona_sr = PersonaSerializer(persona)
         return Response(persona_sr.data)
 
 

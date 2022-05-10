@@ -79,29 +79,13 @@ class MascotaDetailPersonaAV(APIView):
 
     def get(self, request, pk, format=None):
         persona = self.get_object(pk=pk)
-        persona_sr = PersonaSerializer(persona, many=True)
-        return Response(persona_sr.data)
-
-
-class MascotaDetailPersonaAV(APIView):
-    """
-    Obtener persona de la mascota (APIView)
-    """
-    def get_object(self, pk):
-        try:
-            return Persona.objects.filter(mascota=pk)
-        except Persona.DoesNotExist:
-            raise Http404
-
-    def get(self, request, pk, format=None):
-        persona = self.get_object(pk=pk)
-        persona_sr = PersonaSerializer(persona, many=True)
+        persona_sr = PersonaSerializer(persona)
         return Response(persona_sr.data)
 
 
 class MascotaDetailVacunaAV(APIView):
     """
-    Obtener persona de la mascota (APIView)
+    Obtener vacuna de la mascota (APIView)
     """
     def get_object(self, pk):
         try:
