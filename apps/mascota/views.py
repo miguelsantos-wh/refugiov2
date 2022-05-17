@@ -66,6 +66,7 @@ def set_mascota_form(form=None, cookies=None, host=None, api_v=None, request=Non
     # url_vacuna = "{0}{1}/api/{2}/vacunas/".format(protocol, host, api_v)
     # response_persona = requests.get(url=url_persona, cookies=cookies)
     # response_vacuna = requests.get(url=url_vacuna, cookies=cookies)
+    request.method = 'GET'
     instance_persona = {
         'v1': persona_list_ap(request).data,
         'v2': PersonaListAV.as_view()(request).data,
