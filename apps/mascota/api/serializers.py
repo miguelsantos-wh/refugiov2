@@ -28,6 +28,14 @@ class MascotaSerializer(serializers.ModelSerializer):
         model = Mascota
         fields = ('id', 'nombre', 'sexo', 'edad_aproximada', 'fecha_rescate', 'persona', 'vacuna')
 
+    def validate(self, data):
+        """
+        validacion de general de prueba
+        """
+        if data["nombre"] == "oso":
+            raise serializers.ValidationError("Oso es una palabra reservada, por favor introduce otro valor.")
+        return data
+
     def to_representation(self, instance):
         self.fields['persona'] = PersonaSerializer(read_only=True, required=False)
         self.fields['vacuna'] = VacunaSerializer(read_only=True, many=True)

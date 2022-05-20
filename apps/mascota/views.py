@@ -1,11 +1,13 @@
 import json
 
 from django.shortcuts import render, redirect
+from rest_framework import status
 from django.contrib.auth.models import User
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse
 from django.http import HttpResponse
 from django.core import serializers
+from django.contrib import messages
 
 import requests.exceptions
 
@@ -54,10 +56,23 @@ def mascota_create(request, api_v):
                 'v3': MascotaListAVG.as_view(),
                 'v4': MascotaViewSet.as_view({'post': 'create'}),
             }
-            data = instance.get(api_v)(request).data
-            return redirect('mascota-list', api_v=api_v)
+            data = instance.get(api_v)(request)
+            if data.status_code == status.HTTP_201_CREATED:
+                messages.success(request, "Mascota creada correctamente")
+                return redirect('mascota-list', api_v=api_v)
+            for error in data.data.serializer.errors:
+                if error == 'non_field_errors':
+                    form.add_error('__all__', data.data.serializer.errors.get(error)[0])
+                    continue
+                form.add_error(error, data.data.serializer.errors.get(error)[0])
+                # print(key, ": ", value[0])
+                # msg = msg + '<strong>' + key + '</strong>: ' + value[0]
+            # msg = msg + '<br>'
+            # messages.warning(request, msg)
     # form = set_mascota_form(form, cookies, host, api_v)
     form = set_mascota_form(form=form, api_v=api_v, request=request)
+    if not form:
+        return redirect('mascota-list', api_v=api_v)
     return render(request, 'mascota/mascota_form.html', {'form': form})
 
 
@@ -68,31 +83,33 @@ def set_mascota_form(form=None, cookies=None, host=None, api_v=None, request=Non
     # response_vacuna = requests.get(url=url_vacuna, cookies=cookies)
     request.method = 'GET'
     instance_persona = {
-        'v1': persona_list_ap(request).data,
-        'v2': PersonaListAV.as_view()(request).data,
-        'v3': PersonaListAVG.as_view()(request).data,
-        'v4': PersonaViewSet.as_view({'get': 'list'})(request).data,
+        'v1': persona_list_ap,
+        'v2': PersonaListAV.as_view(),
+        'v3': PersonaListAVG.as_view(),
+        'v4': PersonaViewSet.as_view({'get': 'list'}),
     }
     instance_vacuna = {
-        'v1': vacuna_list_ap(request).data,
-        'v2': VacunaListAV().as_view()(request).data,
-        'v3': VacunaListAVG.as_view()(request).data,
-        'v4': VacunaViewSet.as_view({'get': 'list'})(request).data,
+        'v1': vacuna_list_ap,
+        'v2': VacunaListAV().as_view(),
+        'v3': VacunaListAVG.as_view(),
+        'v4': VacunaViewSet.as_view({'get': 'list'}),
     }
-    data_persona = instance_persona.get(api_v)
-    data_vacuna = instance_vacuna.get(api_v)
+    data_persona = instance_persona.get(api_v)(request)
+    data_vacuna = instance_vacuna.get(api_v)(request)
     list_persona, list_vacuna = [], []
     tuple_vacuna, tuple_persona = (), ()
     # if response_persona.ok and response_vacuna.ok:
-    if data_persona and data_vacuna:
-        # response_persona = response_persona.json()
-        # response_vacuna = response_vacuna.json()
-        for persona in data_persona:
-            list_persona.append((persona['id'], persona['nombre']+' '+persona['apellidos']))
-        for vacuna in data_vacuna:
-            list_vacuna.append((vacuna['id'], vacuna['nombre']))
-        tuple_persona = tuple(list_persona)
-        tuple_vacuna = tuple(list_vacuna)
+    if data_persona.status_code != status.HTTP_200_OK or data_vacuna.status_code != status.HTTP_200_OK:
+        messages.warning(request, data_persona.data['detail'])
+        return False
+    # response_persona = response_persona.json()
+    # response_vacuna = response_vacuna.json()
+    for persona in data_persona.data:
+        list_persona.append((persona['id'], persona['nombre']+' '+persona['apellidos']))
+    for vacuna in data_vacuna.data:
+        list_vacuna.append((vacuna['id'], vacuna['nombre']))
+    tuple_persona = tuple(list_persona)
+    tuple_vacuna = tuple(list_vacuna)
     form.fields['persona']._set_choices(tuple_persona)
     form.fields['vacuna']._set_choices(tuple_vacuna)
     return form
@@ -131,7 +148,11 @@ def mascota_delete(request, api_v, pk):
             'v3': MascotaDetailAVG.as_view(),
             'v4': MascotaViewSet.as_view({'delete': 'destroy'}),
         }
-        delete = instance.get(api_v)(request=request, pk=pk).data
+        delete = instance.get(api_v)(request=request, pk=pk)
+        if delete.status_code == status.HTTP_204_NO_CONTENT:
+            messages.success(request, "Mascota eliminada correctamente")
+        else:
+            messages.error(request, "Hubo un problema al eliminar la mascota")
         # headers = {'Content-Type': 'application/json', "X-CSRFToken": csrftoken}
         # response = requests.delete(url, cookies=cookies, headers=headers)
         #
@@ -181,8 +202,15 @@ def mascota_edit(request, api_v, pk):
                 'v3': MascotaDetailAVG.as_view(),
                 'v4': MascotaViewSet.as_view({'put': 'update'}),
             }
-            data = instance.get(api_v)(request=request, pk=pk).data
-            return redirect('mascota-list', api_v=api_v)
+            data = instance.get(api_v)(request=request, pk=pk)
+            if data.status_code == status.HTTP_200_OK:
+                messages.success(request, "Mascota editada correctamente")
+                return redirect('mascota-list', api_v=api_v)
+            for error in data.data.serializer.errors:
+                if error == 'non_field_errors':
+                    form.add_error('__all__', data.data.serializer.errors.get(error)[0])
+                    continue
+                form.add_error(error, data.data.serializer.errors.get(error)[0])
     # form = set_mascota_form(form, cookies, host, api_v)
     form = set_mascota_form(form=form, api_v=api_v, request=request)
     return render(request, 'mascota/mascota_form.html', {'form': form})
@@ -220,4 +248,3 @@ def mascota_persona(request, api_v, pk):
     except:
         pass
     return render(request, 'mascota/mascota_persona.html',  {'object': data})
-

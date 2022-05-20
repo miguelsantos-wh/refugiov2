@@ -22,7 +22,7 @@
                 <nav class="navbar navbar-default">
                      <div class="container-fluid">
                          <div class="navbar-header">
-                          <a class="navbar-brand" href="#">Home</a>
+                          <a class="navbar-brand" target="_blank" href="/admin/">Ir a Admin</a>
                          </div>
                          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                          <ul class="nav navbar-nav">
@@ -74,6 +74,16 @@
                 </nav>
                 </div>
             </div>
+        </div>
+        <div class="alerts">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    {{ message|safe }}
+                </div>
+            {% endfor %}
         </div>
     </div>
 {% endblock %}
