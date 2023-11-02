@@ -30,6 +30,12 @@ ALLOWED_HOSTS = ['*',]
 
 # Application definition
 
+CORS_ORIGIN_ALLOW_ALL = True
+
+# CORS_ORIGIN_WHITELIST = (
+#     'http://localhost:8080'
+# )
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -40,6 +46,7 @@ INSTALLED_APPS = [
     'apps.adopcion',
     'apps.mascota',
     'rest_framework',
+    'corsheaders',
 ]
 
 # Django Rest Framework
@@ -53,6 +60,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 # Comentar DEFAULT_PERMISSION_CLASSES para no dar error de autenticacion
@@ -71,7 +79,7 @@ ROOT_URLCONF = 'refugiov2.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR, 'templates'],
+        'DIRS': [BASE_DIR, 'templates', 'dist'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -139,7 +147,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = (BASE_DIR, 'static',)
+STATICFILES_DIRS = (BASE_DIR, 'static', 'dist/static',)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
